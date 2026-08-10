@@ -44,13 +44,8 @@ public class CheckInController {
     public CheckInResponse create(
             @Valid @RequestBody CheckInRequest request) {
 
-        CheckIn checkIn = new CheckIn();
-
-        checkIn.setCheckInAt(request.checkInAt());
-        checkIn.setCheckOutAt(request.checkOutAt());
-
         return toResponse(
-                checkInService.save(checkIn)
+                checkInService.create(request)
         );
     }
 
@@ -59,13 +54,8 @@ public class CheckInController {
             @PathVariable Long id,
             @Valid @RequestBody CheckInRequest request) {
 
-        CheckIn checkIn = new CheckIn();
-
-        checkIn.setCheckInAt(request.checkInAt());
-        checkIn.setCheckOutAt(request.checkOutAt());
-
         return toResponse(
-                checkInService.update(id, checkIn)
+                checkInService.update(id, request)
         );
     }
 

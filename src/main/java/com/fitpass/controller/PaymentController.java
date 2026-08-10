@@ -42,18 +42,8 @@ public class PaymentController {
     public PaymentResponse create(
             @Valid @RequestBody PaymentRequest request) {
 
-        Payment payment = new Payment();
-
-        payment.setAmount(request.amount());
-        payment.setPaymentDate(request.paymentDate());
-        payment.setPaymentMethod(request.paymentMethod());
-        payment.setPaymentStatus(request.paymentStatus());
-        payment.setTransactionReference(
-                request.transactionReference()
-        );
-
         return toResponse(
-                paymentService.save(payment)
+                paymentService.create(request)
         );
     }
 
@@ -62,18 +52,8 @@ public class PaymentController {
             @PathVariable Long id,
             @Valid @RequestBody PaymentRequest request) {
 
-        Payment payment = new Payment();
-
-        payment.setAmount(request.amount());
-        payment.setPaymentDate(request.paymentDate());
-        payment.setPaymentMethod(request.paymentMethod());
-        payment.setPaymentStatus(request.paymentStatus());
-        payment.setTransactionReference(
-                request.transactionReference()
-        );
-
         return toResponse(
-                paymentService.update(id, payment)
+                paymentService.update(id, request)
         );
     }
 

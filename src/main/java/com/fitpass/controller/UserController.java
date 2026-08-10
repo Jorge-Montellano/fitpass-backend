@@ -40,18 +40,9 @@ public class UserController {
     public UserResponse create(
             @Valid @RequestBody UserRequest request) {
 
-        User user = new User();
-
-        user.setFirstName(request.firstName());
-        user.setLastName(request.lastName());
-        user.setEmail(request.email());
-        user.setPassword(request.password());
-        user.setPhone(request.phone());
-        user.setStatus(request.status());
-
-        User savedUser = userService.save(user);
-
-        return toResponse(savedUser);
+        return toResponse(
+                userService.create(request)
+        );
     }
 
     @PutMapping("/{id}")
@@ -59,16 +50,9 @@ public class UserController {
             @PathVariable Long id,
             @Valid @RequestBody UserRequest request) {
 
-        User user = new User();
-
-        user.setFirstName(request.firstName());
-        user.setLastName(request.lastName());
-        user.setEmail(request.email());
-        user.setPassword(request.password());
-        user.setPhone(request.phone());
-        user.setStatus(request.status());
-
-        return toResponse(userService.update(id, user));
+        return toResponse(
+                userService.update(id, request)
+        );
     }
 
     @DeleteMapping("/{id}")
