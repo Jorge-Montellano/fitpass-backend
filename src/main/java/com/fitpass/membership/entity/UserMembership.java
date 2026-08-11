@@ -33,6 +33,10 @@ public class UserMembership extends Audit{
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
+//    0 = PENDING
+//    1 = ACTIVE
+//    2 = EXPIRED
+//    3 = CANCELLED
     @Column(nullable = false)
     private Integer status;
 
