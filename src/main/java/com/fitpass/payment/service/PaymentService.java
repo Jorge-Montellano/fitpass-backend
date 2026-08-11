@@ -12,21 +12,26 @@ import java.util.List;
 import com.fitpass.payment.event.PaymentCompletedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 
+import com.fitpass.common.messaging.RabbitMQConfig;
+import com.fitpass.payment.event.PaymentCompletedEvent;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+
 @Service
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final UserMembershipRepository userMembershipRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final RabbitTemplate rabbitTemplate;
+
 
     public PaymentService(
             PaymentRepository paymentRepository,
             UserMembershipRepository userMembershipRepository,
-            ApplicationEventPublisher eventPublisher) {
+            RabbitTemplate rabbitTemplate) {
 
         this.paymentRepository = paymentRepository;
         this.userMembershipRepository = userMembershipRepository;
-        this.eventPublisher = eventPublisher;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     public List<Payment> findAll() {
@@ -65,14 +70,19 @@ public class PaymentService {
 
         Payment savedPayment = paymentRepository.save(payment);
 
-        eventPublisher.publishEvent(
+        PaymentCompletedEvent event =
                 new PaymentCompletedEvent(
                         savedPayment.getId(),
                         savedPayment.getUserMembership().getId(),
                         savedPayment.getAmount(),
                         savedPayment.getPaymentMethod(),
                         LocalDateTime.now()
-                )
+                );
+
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.EXCHANGE,
+                RabbitMQConfig.PAYMENT_ROUTING_KEY,
+                event
         );
 
         return savedPayment;

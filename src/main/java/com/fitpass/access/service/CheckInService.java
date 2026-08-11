@@ -11,6 +11,10 @@ import org.springframework.stereotype.Service;
 import com.fitpass.access.event.UserCheckedInEvent;
 import org.springframework.context.ApplicationEventPublisher;
 
+import com.fitpass.common.messaging.RabbitMQConfig;
+import com.fitpass.access.event.UserCheckedInEvent;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,18 +24,18 @@ public class CheckInService {
     private final CheckInRepository checkInRepository;
     private final UserRepository userRepository;
     private final GymRepository gymRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final RabbitTemplate rabbitTemplate;
 
     public CheckInService(
             CheckInRepository checkInRepository,
             UserRepository userRepository,
             GymRepository gymRepository,
-            ApplicationEventPublisher eventPublisher) {
+            RabbitTemplate rabbitTemplate){
 
         this.checkInRepository = checkInRepository;
         this.userRepository = userRepository;
         this.gymRepository = gymRepository;
-        this.eventPublisher = eventPublisher;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     public List<CheckIn> findAll() {
@@ -71,14 +75,18 @@ public class CheckInService {
 
         CheckIn savedCheckIn = checkInRepository.save(checkIn);
 
-        eventPublisher.publishEvent(
+        UserCheckedInEvent event =
                 new UserCheckedInEvent(
                         savedCheckIn.getId(),
                         savedCheckIn.getUser().getId(),
                         savedCheckIn.getGym().getId(),
                         savedCheckIn.getCheckInAt(),
                         LocalDateTime.now()
-                )
+                );
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.EXCHANGE,
+                RabbitMQConfig.CHECKIN_ROUTING_KEY,
+                event
         );
 
         return savedCheckIn;

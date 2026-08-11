@@ -1,18 +1,21 @@
 package com.fitpass.access.listener;
 
 import com.fitpass.access.event.UserCheckedInEvent;
-import org.springframework.context.event.EventListener;
+import com.fitpass.common.messaging.RabbitMQConfig;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AccessEventListener {
 
-    @EventListener
+    @RabbitListener(
+            queues = RabbitMQConfig.CHECKIN_QUEUE
+    )
     public void handleUserCheckedIn(
             UserCheckedInEvent event) {
 
         System.out.println(
-                "EVENT RECEIVED -> UserCheckedIn"
+                "RABBITMQ EVENT RECEIVED -> UserCheckedIn"
         );
 
         System.out.println(

@@ -1,30 +1,22 @@
 package com.fitpass.payment.listener;
 
+import com.fitpass.common.messaging.RabbitMQConfig;
 import com.fitpass.payment.event.PaymentCompletedEvent;
-import org.springframework.context.event.EventListener;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PaymentEventListener {
 
-    @EventListener
-    public void handlePaymentCompleted(
-            PaymentCompletedEvent event) {
+    @RabbitListener(queues = RabbitMQConfig.PAYMENT_QUEUE)
+    public void handlePaymentCompleted(PaymentCompletedEvent event) {
 
         System.out.println(
-                "EVENT RECEIVED -> PaymentCompleted"
+                "RABBITMQ EVENT RECEIVED -> PaymentCompleted"
         );
 
-        System.out.println(
-                "Payment ID: " + event.paymentId()
-        );
-
-        System.out.println(
-                "Membership ID: " + event.userMembershipId()
-        );
-
-        System.out.println(
-                "Amount: " + event.amount()
-        );
+        System.out.println("Payment ID: " + event.paymentId());
+        System.out.println("Membership ID: " + event.userMembershipId());
+        System.out.println("Amount: " + event.amount());
     }
 }
