@@ -8,7 +8,10 @@ import com.fitpass.gym.repository.GymRepository;
 import com.fitpass.user.entity.User;
 import com.fitpass.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import com.fitpass.access.event.UserCheckedInEvent;
+import org.springframework.context.ApplicationEventPublisher;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -17,15 +20,18 @@ public class CheckInService {
     private final CheckInRepository checkInRepository;
     private final UserRepository userRepository;
     private final GymRepository gymRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public CheckInService(
             CheckInRepository checkInRepository,
             UserRepository userRepository,
-            GymRepository gymRepository) {
+            GymRepository gymRepository,
+            ApplicationEventPublisher eventPublisher) {
 
         this.checkInRepository = checkInRepository;
         this.userRepository = userRepository;
         this.gymRepository = gymRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     public List<CheckIn> findAll() {
@@ -63,7 +69,19 @@ public class CheckInService {
         checkIn.setCheckInAt(request.checkInAt());
         checkIn.setCheckOutAt(request.checkOutAt());
 
-        return checkInRepository.save(checkIn);
+        CheckIn savedCheckIn = checkInRepository.save(checkIn);
+
+        eventPublisher.publishEvent(
+                new UserCheckedInEvent(
+                        savedCheckIn.getId(),
+                        savedCheckIn.getUser().getId(),
+                        savedCheckIn.getGym().getId(),
+                        savedCheckIn.getCheckInAt(),
+                        LocalDateTime.now()
+                )
+        );
+
+        return savedCheckIn;
     }
 
     public CheckIn update(

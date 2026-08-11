@@ -7,20 +7,26 @@ import com.fitpass.payment.entity.Payment;
 import com.fitpass.payment.repository.PaymentRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import com.fitpass.payment.event.PaymentCompletedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 
 @Service
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final UserMembershipRepository userMembershipRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public PaymentService(
             PaymentRepository paymentRepository,
-            UserMembershipRepository userMembershipRepository) {
+            UserMembershipRepository userMembershipRepository,
+            ApplicationEventPublisher eventPublisher) {
 
         this.paymentRepository = paymentRepository;
         this.userMembershipRepository = userMembershipRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     public List<Payment> findAll() {
@@ -57,7 +63,19 @@ public class PaymentService {
                 request.transactionReference()
         );
 
-        return paymentRepository.save(payment);
+        Payment savedPayment = paymentRepository.save(payment);
+
+        eventPublisher.publishEvent(
+                new PaymentCompletedEvent(
+                        savedPayment.getId(),
+                        savedPayment.getUserMembership().getId(),
+                        savedPayment.getAmount(),
+                        savedPayment.getPaymentMethod(),
+                        LocalDateTime.now()
+                )
+        );
+
+        return savedPayment;
     }
 
     public Payment update(
