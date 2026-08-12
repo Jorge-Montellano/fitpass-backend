@@ -70,9 +70,8 @@ public class CheckInService {
 
         checkIn.setUser(user);
         checkIn.setGym(gym);
-        checkIn.setCheckInAt(request.checkInAt());
         checkIn.setCheckOutAt(request.checkOutAt());
-
+        checkIn.setCheckInAt(LocalDateTime.now());
         CheckIn savedCheckIn = checkInRepository.save(checkIn);
 
         UserCheckedInEvent event =
