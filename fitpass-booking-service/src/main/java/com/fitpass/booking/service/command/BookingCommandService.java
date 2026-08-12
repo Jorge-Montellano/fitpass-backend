@@ -1,41 +1,32 @@
-package com.fitpass.booking.service;
+package com.fitpass.booking.service.command;
 
 import com.fitpass.booking.entity.Booking;
-import com.fitpass.booking.repository.BookingRepository;
-import org.springframework.stereotype.Service;
 import com.fitpass.booking.event.BookingCreatedEvent;
 import com.fitpass.booking.messaging.RabbitMQConfig;
+import com.fitpass.booking.repository.BookingRepository;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
-public class BookingService {
+public class BookingCommandService {
 
     private final BookingRepository bookingRepository;
     private final RabbitTemplate rabbitTemplate;
 
-    public BookingService(BookingRepository bookingRepository,
-                          RabbitTemplate rabbitTemplate) {
+    public BookingCommandService(
+            BookingRepository bookingRepository,
+            RabbitTemplate rabbitTemplate) {
+
         this.bookingRepository = bookingRepository;
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public List<Booking> findAll() {
-        return bookingRepository.findAll();
-    }
-
-    public Booking findById(Long id) {
-        return bookingRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Booking not found with id: " + id
-                        ));
-    }
-
     public Booking create(Booking booking) {
+
         booking.setStatus(1); // CONFIRMED
+
         Booking saved = bookingRepository.save(booking);
 
         BookingCreatedEvent event =
@@ -54,11 +45,11 @@ public class BookingService {
         );
 
         System.out.println(
-                "RABBITMQ EVENT PUBLISHED -> BookingCreated"
+                "CQRS COMMAND -> Booking created"
         );
 
         System.out.println(
-                "Booking ID: " + saved.getId()
+                "RABBITMQ EVENT PUBLISHED -> BookingCreated"
         );
 
         return saved;
@@ -66,7 +57,11 @@ public class BookingService {
 
     public Booking cancel(Long id) {
 
-        Booking booking = findById(id);
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Booking not found with id: " + id
+                        ));
 
         booking.setStatus(2); // CANCELLED
 

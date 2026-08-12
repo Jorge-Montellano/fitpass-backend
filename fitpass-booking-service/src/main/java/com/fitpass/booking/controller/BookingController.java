@@ -3,7 +3,8 @@ package com.fitpass.booking.controller;
 import com.fitpass.booking.dto.BookingRequest;
 import com.fitpass.booking.dto.BookingResponse;
 import com.fitpass.booking.entity.Booking;
-import com.fitpass.booking.service.BookingService;
+import com.fitpass.booking.service.command.BookingCommandService;
+import com.fitpass.booking.service.query.BookingQueryService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -14,16 +15,20 @@ import java.util.List;
 @RequestMapping("/api/bookings")
 public class BookingController {
 
-    private final BookingService bookingService;
+    private final BookingCommandService bookingCommandService;
+    private final BookingQueryService bookingQueryService;
 
-    public BookingController(BookingService bookingService) {
-        this.bookingService = bookingService;
+    public BookingController(
+            BookingCommandService bookingCommandService,
+            BookingQueryService bookingQueryService) {
+
+        this.bookingCommandService = bookingCommandService;
+        this.bookingQueryService = bookingQueryService;
     }
-
     @GetMapping
     public List<BookingResponse> findAll() {
 
-        return bookingService.findAll()
+        return bookingQueryService.findAll()
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -31,8 +36,11 @@ public class BookingController {
 
     @GetMapping("/{id}")
     public BookingResponse findById(@PathVariable Long id) {
-        return toResponse(bookingService.findById(id));
+        return toResponse(
+                bookingQueryService.findById(id)
+        );
     }
+
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -45,7 +53,7 @@ public class BookingController {
         booking.setClassId(request.classId());
 
         return toResponse(
-                bookingService.create(booking)
+                bookingCommandService.create(booking)
         );
     }
 
@@ -54,7 +62,7 @@ public class BookingController {
             @PathVariable Long id) {
 
         return toResponse(
-                bookingService.cancel(id)
+                bookingCommandService.cancel(id)
         );
     }
 
