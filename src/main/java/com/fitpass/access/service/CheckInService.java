@@ -9,6 +9,7 @@ import com.fitpass.user.entity.User;
 import com.fitpass.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -60,9 +61,8 @@ public class CheckInService {
 
         checkIn.setUser(user);
         checkIn.setGym(gym);
-        checkIn.setCheckInAt(request.checkInAt());
         checkIn.setCheckOutAt(request.checkOutAt());
-
+        checkIn.setCheckInAt(LocalDateTime.now());
         return checkInRepository.save(checkIn);
     }
 
