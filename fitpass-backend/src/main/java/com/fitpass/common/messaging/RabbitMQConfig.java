@@ -43,6 +43,12 @@ public class RabbitMQConfig {
     public static final String MEMBERSHIP_PAYMENT_COMPLETED_QUEUE =
             "fitpass.membership.payment.completed";
 
+    public static final String BOOKING_CREATED_QUEUE =
+            "fitpass.notification.booking-created";
+
+    public static final String BOOKING_CREATED_ROUTING_KEY =
+            "booking.created";
+
     @Bean
     public DirectExchange fitpassExchange() {
         return new DirectExchange(EXCHANGE);
@@ -140,6 +146,23 @@ public class RabbitMQConfig {
                 .bind(queue)
                 .to(fitpassExchange)
                 .with(PAYMENT_ROUTING_KEY);
+    }
+
+    @Bean
+    public Queue bookingCreatedQueue() {
+        return new Queue(BOOKING_CREATED_QUEUE, true);
+    }
+
+    @Bean
+    public Binding bookingCreatedBinding(
+            @Qualifier("bookingCreatedQueue")
+            Queue bookingCreatedQueue,
+            DirectExchange fitpassExchange) {
+
+        return BindingBuilder
+                .bind(bookingCreatedQueue)
+                .to(fitpassExchange)
+                .with(BOOKING_CREATED_ROUTING_KEY);
     }
 
     @Bean
