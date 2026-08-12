@@ -1,0 +1,46 @@
+services:
+
+  db-postgres:
+    container_name: postgres-db
+    image: postgres:17
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: fitpass
+    volumes:
+      - postgres-db-fitpass:/var/lib/postgresql/data
+
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:6.17
+    restart: unless-stopped
+    depends_on:
+      - db-postgres
+    ports:
+      - "8080:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@fitpass.com
+      PGADMIN_DEFAULT_PASSWORD: 123456
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+
+  rabbitmq:
+    container_name: fitpass-rabbitmq
+    image: rabbitmq:4-management
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: fitpass
+      RABBITMQ_DEFAULT_PASS: fitpass
+
+
+volumes:
+  postgres-db-fitpass:
+  pgadmin-data:
