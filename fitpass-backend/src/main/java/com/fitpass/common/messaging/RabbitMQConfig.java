@@ -43,11 +43,6 @@ public class RabbitMQConfig {
     public static final String MEMBERSHIP_PAYMENT_COMPLETED_QUEUE =
             "fitpass.membership.payment.completed";
 
-    public static final String BOOKING_CREATED_QUEUE =
-            "fitpass.notification.booking-created";
-
-    public static final String BOOKING_CREATED_ROUTING_KEY =
-            "booking.created";
 
     @Bean
     public DirectExchange fitpassExchange() {
@@ -70,6 +65,21 @@ public class RabbitMQConfig {
     @Bean
     public Queue membershipPurchaseQueue() {
         return new Queue(MEMBERSHIP_PURCHASE_QUEUE, true);
+    }
+
+
+    @Bean
+    public Queue paymentFailedQueue() {
+        return new Queue(PAYMENT_FAILED_QUEUE, true);
+    }
+
+
+    @Bean
+    public Queue membershipPaymentCompletedQueue() {
+        return new Queue(
+                MEMBERSHIP_PAYMENT_COMPLETED_QUEUE,
+                true
+        );
     }
 
 
@@ -111,10 +121,6 @@ public class RabbitMQConfig {
                 .with(MEMBERSHIP_PURCHASE_ROUTING_KEY);
     }
 
-    @Bean
-    public Queue paymentFailedQueue() {
-        return new Queue(PAYMENT_FAILED_QUEUE, true);
-    }
 
     @Bean
     public Binding paymentFailedBinding(
@@ -128,13 +134,6 @@ public class RabbitMQConfig {
                 .with(PAYMENT_FAILED_ROUTING_KEY);
     }
 
-    @Bean
-    public Queue membershipPaymentCompletedQueue() {
-        return new Queue(
-                MEMBERSHIP_PAYMENT_COMPLETED_QUEUE,
-                true
-        );
-    }
 
     @Bean
     public Binding membershipPaymentCompletedBinding(
@@ -148,22 +147,6 @@ public class RabbitMQConfig {
                 .with(PAYMENT_ROUTING_KEY);
     }
 
-    @Bean
-    public Queue bookingCreatedQueue() {
-        return new Queue(BOOKING_CREATED_QUEUE, true);
-    }
-
-    @Bean
-    public Binding bookingCreatedBinding(
-            @Qualifier("bookingCreatedQueue")
-            Queue bookingCreatedQueue,
-            DirectExchange fitpassExchange) {
-
-        return BindingBuilder
-                .bind(bookingCreatedQueue)
-                .to(fitpassExchange)
-                .with(BOOKING_CREATED_ROUTING_KEY);
-    }
 
     @Bean
     public MessageConverter jsonMessageConverter() {

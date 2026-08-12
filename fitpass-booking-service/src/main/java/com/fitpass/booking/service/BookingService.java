@@ -1,6 +1,7 @@
 package com.fitpass.booking.service;
 
 import com.fitpass.booking.entity.Booking;
+import com.fitpass.booking.event.BookingCancelledEvent;
 import com.fitpass.booking.repository.BookingRepository;
 import org.springframework.stereotype.Service;
 import com.fitpass.booking.event.BookingCreatedEvent;
@@ -70,6 +71,32 @@ public class BookingService {
 
         booking.setStatus(2); // CANCELLED
 
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+
+        BookingCancelledEvent event =
+                new BookingCancelledEvent(
+                        saved.getId(),
+                        saved.getUserId(),
+                        saved.getClassId(),
+                        saved.getStatus(),
+                        LocalDateTime.now()
+                );
+
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.EXCHANGE,
+                RabbitMQConfig.BOOKING_CANCELLED_ROUTING_KEY,
+                event
+        );
+
+
+        System.out.println(
+                "RABBITMQ EVENT PUBLISHED -> BookingCancelled"
+        );
+
+        System.out.println(
+                "Booking ID: " + saved.getId()
+        );
+
+        return saved;
     }
 }
